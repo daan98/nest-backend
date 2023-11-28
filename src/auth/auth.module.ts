@@ -1,3 +1,5 @@
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -9,7 +11,13 @@ import { User, UserSchema } from './entities/user.entity';
   controllers: [AuthController],
   providers: [AuthService],
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
+    ConfigModule.forRoot(),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SEED,
+      signOptions: { expiresIn: '1h' },
+    }),
   ]
 })
 export class AuthModule {}

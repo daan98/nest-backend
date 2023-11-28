@@ -1,30 +1,24 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import * as bcryptjs from "bcryptjs";
 
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { CreateUserDto, LoginDto, RegisterUserDto, UpdateAuthDto } from './dto';
 import { User } from './entities/user.entity';
+import { JwtPayload, LoginResponseInterface } from './interfaces';
 
 @Injectable()
 export class AuthService {
 
   constructor(
     @InjectModel(User.name)
-    private userModel : Model<User>
+    private userModel : Model<User>,
+    private jwtService: JwtService
   ) { }
 
-  /* async */ create(createUserDto: CreateUserDto) : Promise<User> {
-    console.log('createUserDto: ', createUserDto);
-    const newUser = new this.userModel({
-      name: createUserDto.name,
-      email: createUserDto.email,
-      password: createUserDto.password
-    });
-    console.log('newUser: ', newUser);
-    return newUser.save();
-    /* try {
+  async create(createUserDto: CreateUserDto) : Promise<User> {
+    try {
       // 1. Encryting password
       const { password, ...userData } = createUserDto;
       
@@ -36,10 +30,8 @@ export class AuthService {
       // 2. Save user
       await newUser.save();
 
-      // 3. Generate JWT
-
       const { password:_, ...user } = newUser.toJSON();
-      console.log('user :', user);
+
       return user;
     } catch (error) {
       if (error.code === 11000) {
@@ -47,12 +39,47 @@ export class AuthService {
       }
 
       throw new InternalServerErrorException('Something went wrong. Please contact the backend team.');
-    } */
+    }
 
   }
 
+  async register(registerUserDto : RegisterUserDto) : Promise<LoginResponseInterface> {
+    /* Handling possible scenario in which the RegisterUserDto and CreateUserDto are differents */
+    const { email, name, password } = registerUserDto;
+    const user = await this.create({ email, name, password })
+    return {
+      user,
+      token: this.getJWT({ id: user._id }),
+    };
+  }
+
+  async login( loginDto : LoginDto ) : Promise<LoginResponseInterface> {
+    const { password, email } = loginDto;
+    const user = await this.userModel.findOne({ email });
+
+    if(!user) {
+      throw new UnauthorizedException('Unvalid user')
+    }
+
+    if(!bcryptjs.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Unvalid password');
+    }
+
+    const { password:_, ...loggedUser } = user.toJSON();
+    return {
+      user: loggedUser,
+      token: this.getJWT({ id: user.id })
+    }
+  }
+
   findAll() {
-    return `This action returns all auth`;
+    return this.userModel.find();
+  }
+
+  async findUserById( id : string ) {
+    const user = await this.userModel.findById( id );
+    const { password, ...rest } = user.toJSON();
+    return rest;
   }
 
   findOne(id: number) {
@@ -65,5 +92,10 @@ export class AuthService {
 
   remove(id: number) {
     return `This action removes a #${id} auth`;
+  }
+
+  getJWT( payload : JwtPayload ) {
+    const token = this.jwtService.sign(payload);
+    return token;
   }
 }
