@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto, LoginDto, RegisterUserDto, UpdateAuthDto } from './dto';
 import { LoginResponseInterface } from './interfaces';
 import { User } from './entities/user.entity';
+import { throwError } from 'rxjs';
 
 @Controller('auth')
 export class AuthController {
@@ -36,11 +37,10 @@ export class AuthController {
   @Get('check-token')
   checkToken(@Request() req : Request) : LoginResponseInterface {
     const user  = req['user'] as User;
-    const token = this.authService.getJWT({ id: user._id });
     
     return {
       user,
-      token
+      token: this.authService.getJWT({ id: user?._id })
     };
   }
 

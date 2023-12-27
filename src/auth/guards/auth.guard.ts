@@ -14,9 +14,6 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
-    console.log({request});
-    console.log({token});
-
     if(!token) {
       throw new UnauthorizedException('There is no bearer token.');
     }
@@ -26,7 +23,7 @@ export class AuthGuard implements CanActivate {
         token, { secret: process.env.JWT_SEED }
       );
 
-      const user = await this.authService.findUserById(payload.id)
+      const user = await this.authService.findUserById(payload.id);
 
       if(!user) {
         throw new UnauthorizedException('User does not exists.');
@@ -38,7 +35,7 @@ export class AuthGuard implements CanActivate {
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request['user'] = payload.id;      
+      request['user'] = user;
     } catch (error) {
       throw new UnauthorizedException();
     }

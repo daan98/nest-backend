@@ -49,7 +49,7 @@ export class AuthService {
     const user = await this.create({ email, name, password })
     return {
       user,
-      token: this.getJWT({ id: user._id }),
+      token: this.getJWT({ id: user?._id }),
     };
   }
 
@@ -72,7 +72,7 @@ export class AuthService {
     }
   }
 
-  findAll() {
+  findAll() : Promise<User[]> {
     return this.userModel.find();
   }
 
