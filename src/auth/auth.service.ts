@@ -45,7 +45,12 @@ export class AuthService {
 
   async register(registerUserDto : RegisterUserDto) : Promise<LoginResponseInterface> {
     /* Handling possible scenario in which the RegisterUserDto and CreateUserDto are differents */
-    const { email, name, password } = registerUserDto;
+    const { email, name, password, confirmPassword } = registerUserDto;
+
+    if(password !== confirmPassword) {
+      throw new UnauthorizedException('password must match.')
+    }
+    
     const user = await this.create({ email, name, password })
     return {
       user,
