@@ -14,6 +14,12 @@ export class HeroesService {
   ) {}
 
   async create(createHeroDto: CreateHeroDto) {
+    const foundHero = this.heroModel.find({ superhero: createHeroDto.superhero });
+
+    if(foundHero) {
+      throw new BadRequestException(`${ createHeroDto.superhero } has already been created`);
+    }
+
     try {
       const newHero = new this.heroModel(createHeroDto)
 
