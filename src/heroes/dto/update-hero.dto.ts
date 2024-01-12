@@ -18,4 +18,7 @@ export class UpdateHeroDto extends PartialType(CreateHeroDto) {
 
     @IsString()
     characters       : string;
+
+    @IsString()
+    alter_img        : string;
 }

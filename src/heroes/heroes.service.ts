@@ -69,9 +69,9 @@ export class HeroesService {
         return foundHeroes
       }
 
-      throw new Error('There are no heroes, please add somes.');
+      throw new Error('There are no heroes that match the search.');
     } catch (error) {
-      throw new InternalServerErrorException(`Something went wrong while searching hero. Please contact the backend if problem persists ${error}`);
+      throw new InternalServerErrorException(`Something went wrong while searching hero. Please contact the backend if problem persists`);
     }
   }
 

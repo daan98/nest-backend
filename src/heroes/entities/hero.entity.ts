@@ -3,7 +3,7 @@ import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 @Schema()
 export class Hero {
 
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true })
     id               : string;
 
     @Prop({ required: true })
@@ -21,7 +21,7 @@ export class Hero {
     @Prop({ required: true })
     characters       : string;
 
-    @Prop({ required: true })
+    @Prop()
     alter_img        : string;
 }
 
