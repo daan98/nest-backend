@@ -16,7 +16,8 @@ export class HeroesService {
   async create(createHeroDto: CreateHeroDto) {
     
     try {
-      const foundHero = await this.heroModel.find({ superhero: {$regex: createHeroDto.superhero} }, ).exec();
+      const superheroRegex = new RegExp(`${createHeroDto.superhero}`, 'i');
+      const foundHero = await this.heroModel.find({ superhero: {$regex: superheroRegex} }).exec();
   
       if(foundHero.length > 0) {
         throw new BadRequestException(`${ createHeroDto.superhero } has already been created`);
@@ -85,7 +86,8 @@ export class HeroesService {
   async update(id: any, updateHeroDto: UpdateHeroDto) {
     try {
       if(updateHeroDto.superhero) {
-        const foundHero = await this.heroModel.find({ superhero: {$regex: updateHeroDto.superhero} }, ).exec();
+        const superheroRegex = new RegExp(`${updateHeroDto.superhero}`, 'i');
+        const foundHero      = await this.heroModel.find({ superhero: {$regex: superheroRegex} }).exec();
     
         if(foundHero.length > 0) {
           throw new BadRequestException(`${ updateHeroDto.superhero } has already been created`);
